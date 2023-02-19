@@ -13,13 +13,19 @@ app = Flask(__name__)
 config = read_config()
 API_KEY = config["FTPSettings"]['api_key']
 
+# to get the sqlite db connection
+def get_db_connection():
+    db = sqlite3.connect('database.db')
+    db.row_factory = sqlite3.Row
+    return db
+
+
+
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
 
 # Make sure API key is set
 if not os.environ.get("API_KEY"):
@@ -33,6 +39,16 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+@app.route('/')
+def index():
+    db = get_db_connection()
+    users = db.execute('SELECT * FROM users').fetchall()
+    db.close()
+    return render_template('index.html', users=users)
+
+    ## TODO: fetch user content history for index page
 
 
 @app.route("/about")
