@@ -12,7 +12,7 @@ def read_config():
 
 
 def error(message, code=400):
-    """Render message as an apology to user."""
+    """Render message as an error to user."""
 
     return render_template("error.html")
 
