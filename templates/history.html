@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    history of searches
+{% endblock %}
+
+{% block main %}
+    <form action="/history" method="post">
+        <input autocomplete="off" autofocus name="query" placeholder="search a word" type="text" required>
+        <button class="btn btn-primary" type="submit">search</button>
+    </form>
+{% endblock %}

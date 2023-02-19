@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Transaction History
+{% endblock %}
+
+{% block main %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Name of Stock</th>
+          <th scope="col">Symbols</th>
+          <th scope="col">Shares</th>
+          <th scope="col">Share Price</th>
+          <th scope="col">Purchase Amount</th>
+          <th scope="col">Time Purchased</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in history %}
+        <tr>
+          <td>{{ row["name"] }}</td>
+          <td>{{ row["stock_symbol"] }}</td>
+          <td>{{ row["shares_bought"] }}</td>
+          <td>{{ row["share_price"] }}</td>
+          <td>{{ row["purchase_amount"] }}</td>
+          <td>{{ row["purchase_date_time"] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,10 @@
+# sensitive files
+config.py
+client_secret.json
+generate_config.py
+configurations.ini
+
+# other
+.vscode
+.DS_Store
+__pycache__
