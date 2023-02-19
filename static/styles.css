@@ -1,7 +1,8 @@
 /* Size for brand */
 nav .navbar-brand
 {
-    font-size: xx-large 
+    font-size: xx-large;
+    align-content: center; 
 }
 
 /* Colors for brand */

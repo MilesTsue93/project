@@ -147,13 +147,3 @@ def register():
             # Log new user in
             session["user_id"] = new_id
             return render_template("empty.html")
-
-
-
-@app.route("/about", methods=["GET", "POST"])
-@login_required
-def about():
-    """display info about what this web app does"""
-    # TODO
-
-    return redirect("/")
