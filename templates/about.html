@@ -1,32 +1,18 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Transaction History
+    About
 {% endblock %}
 
 {% block main %}
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th scope="col">Name of Stock</th>
-          <th scope="col">Symbols</th>
-          <th scope="col">Shares</th>
-          <th scope="col">Share Price</th>
-          <th scope="col">Purchase Amount</th>
-          <th scope="col">Time Purchased</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in history %}
-        <tr>
-          <td>{{ row["name"] }}</td>
-          <td>{{ row["stock_symbol"] }}</td>
-          <td>{{ row["shares_bought"] }}</td>
-          <td>{{ row["share_price"] }}</td>
-          <td>{{ row["purchase_amount"] }}</td>
-          <td>{{ row["purchase_date_time"] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+   <h1>This is i-Content, an application to inspire you to think outside the box</h1> 
+   <p>i-Content is a simple, web-based application to allow 
+   anyone with access to the internet to personalize an inspirational web space. Simply type in a word and 
+   allow inspiration to flow from what is generated.
+   </p>
+   <hr>
+   <hr>
+   <p>
+   <i>Miles Tsue is a software engineer and musician based in New York, NY.</i>
+   </p>
 {% endblock %}

@@ -21,9 +21,8 @@ There are HTML pages for:
 4. a login page
 5. a register user page
 6. a page showing index of gpast enerated content
+7. As well as a general layout template where all the pages inherit their properties
 
-As well as a general layout template where all the pages inherit their properties
-
-#### *A portion of this code was refactored from Problem Set 9: Finance from CS50's class, including the layout HTML page, the login route and the logout route, and the hashed password*
+#### *A portion of this code was refactored from Problem Set 9: Finance from CS50's class, including the layout HTML page, the login route and the logout route, and the hashed_password functions from Werkzeug's libraries*
 
 

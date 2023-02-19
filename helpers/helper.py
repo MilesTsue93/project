@@ -11,7 +11,7 @@ def read_config():
     return config
 
 
-def error(message, code=400):
+def error():
     """Render message as an error to user."""
 
     return render_template("error.html")
