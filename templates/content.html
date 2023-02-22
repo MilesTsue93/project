@@ -6,7 +6,16 @@
 
 {% block main %}
     <form action="/content" method="post">
-        <input autocomplete="off" autofocus name="query" placeholder="search a word" type="text" required>
+        <input autocomplete="off" autofocus name="search" placeholder="type a word" type="text" required>
         <button class="btn btn-primary" type="submit">search</button>
+
+        <label for="entry">Thoughts on your content</label>
+
+        <textarea name="entry" rows="4" cols="50" placeholder="write your thoughts..." maxlength="150">
+            <p>
+                {{ entry }}
+            </p>
+        </textarea>
+
     </form>
 {% endblock %}

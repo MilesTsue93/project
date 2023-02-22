@@ -23,6 +23,6 @@ There are HTML pages for:
 6. a page showing index of gpast enerated content
 7. As well as a general layout template where all the pages inherit their properties
 
-#### *A portion of this code was refactored from Problem Set 9: Finance from CS50's class, including the layout HTML page, the login route and the logout route, and the hashed_password functions from Werkzeug's libraries*
+#### *A portion of this code was refactored from Problem Set 9: Finance from CS50's class, including the layout HTML page, the login route and the logout route, the hashed_password functions from Werkzeug's libraries, and some bootstrap dependencies*
 
-
+Youtube Data API was used through my google developer account. URL to youtube data api: https://developers.google.com/youtube/v3/

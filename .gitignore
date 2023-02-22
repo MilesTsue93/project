@@ -9,3 +9,6 @@ configurations.ini
 .DS_Store
 __pycache__
 
+# folders
+flask_session
+
