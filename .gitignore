@@ -10,5 +10,6 @@ configurations.ini
 __pycache__
 
 # folders
-flask_session
+flask session/
+
 

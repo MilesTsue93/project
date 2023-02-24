@@ -47,14 +47,13 @@ def after_request(response):
 @app.route('/')
 @login_required
 def index():
-
-    db = get_db_connection()
-
-    users = db.execute('SELECT * FROM users WHERE user = ?', session["user_id"]).fetchall()
-    ## TODO: fetch user content history for index page
     
+    user = session["user_id"]
+    db = get_db_connection()
+    history = db.execute('SELECT video_name, text_content, time_logged WHERE user = ?', user)
+
     db.close()
-    return render_template('index.html', users=users)
+    return render_template('index.html', history=history)
 
 
 @app.route("/about")
