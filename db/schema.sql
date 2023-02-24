@@ -7,12 +7,13 @@ CREATE TABLE users (
     username TEXT NOT NULL
 );
 
-CREATE TABLE history
-(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-video_name TEXT,
-text_content TEXT,
-time_logged DATETIME NOT NULL default(current_timestamp),
-'user_id' INTEGER
+CREATE TABLE history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    video_name TEXT,
+    text_content TEXT,
+    time_logged DATETIME NOT NULL default(current_timestamp),
+    'user_id' INTEGER
 );
 
+CREATE TABLE """sqlite_sequence"""(name,seq);
 CREATE UNIQUE INDEX username ON users (username);

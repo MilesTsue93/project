@@ -49,8 +49,11 @@ def after_request(response):
 def index():
     
     user = session["user_id"]
+    print(user)
+    print()
+    print()
     db = get_db_connection()
-    history = db.execute('SELECT video_name, text_content, time_logged WHERE user = ?', user)
+    history = db.execute('SELECT video_name, text_content, time_logged FROM history WHERE user_id = (SELECT username FROM users WHERE id = ?)', (user))
 
     db.close()
     return render_template('index.html', history=history)
@@ -179,4 +182,4 @@ def register():
             # Log new user in
             session["user_id"] = new_id.fetchall()
             
-            return render_template("index.html")
+            return render_template("login.html")
