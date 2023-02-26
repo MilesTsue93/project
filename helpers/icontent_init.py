@@ -10,7 +10,5 @@ connection = sqlite3.connect('icontent.db')
 with open('db/schema.sql') as f:
     connection.executescript(f.read())
 
-#cur = connection.cursor()
-
 connection.commit()
 connection.close()

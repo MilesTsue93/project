@@ -4,11 +4,14 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-import json
+import os
 
 from helpers.helper import error, login_required, read_config
 from googleapiclient.discovery import build
 
+# directory for application - 
+# to be concatenated with database relative path
+current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Configure application
 app = Flask(__name__)
@@ -18,15 +21,7 @@ API_KEY = config["FTPSettings"]["api_key"]
 # for youtube api calls
 api_service_name = "youtube"
 api_version = "v3"
-youtube = build(api_service_name, api_version, developerKey=API_KEY)
-
-# to get the sqlite db connection
-
-def get_db_connection():
-
-    db = sqlite3.connect('icontent.db')
-    db.row_factory = sqlite3.Row 
-    return db    
+youtube = build(api_service_name, api_version, developerKey=API_KEY)   
 
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -48,14 +43,26 @@ def after_request(response):
 @login_required
 def index():
     
+    # defining connection instance
+    # to get the sqlite db connection
+    conn = sqlite3.connect(current_directory + '/icontent.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor() 
+
     user = session["user_id"]
     print(user)
     print()
     print()
-    db = get_db_connection()
-    history = db.execute('SELECT video_name, text_content, time_logged FROM history WHERE user_id = (SELECT username FROM users WHERE id = ?)', (user))
+    
+    history = cursor.execute("SELECT video_name, text_content, time_logged FROM history")
+    
+    # commit the change in db
+    conn.commit()
+    
+    # close the cursor
+    cursor.close()
 
-    db.close()
+    # return the html page to show user content history
     return render_template('index.html', history=history)
 
 
@@ -69,7 +76,12 @@ def about():
 def login():
     """Log user in"""
 
-    db = get_db_connection()
+    # defining connection instance
+    # to get the sqlite db connection
+    conn = sqlite3.connect(current_directory + '/icontent.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
     # Forget any user_id
     session.clear()
 
@@ -85,20 +97,27 @@ def login():
             return render_template("error.html")
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
+        rows = cursor.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
 
         # Ensure username exists and password is correct
         if not check_password_hash(rows.fetchall(), request.form.get("password")):
             return render_template("error.html")
 
         # Remember which user has logged in
-        session["user_id"] = rows.fetchall()
+        session["user_id"] = rows.fetchall()[0] 
+
+        # commit the change in db
+        conn.commit()
+
+        # close the cursor
+        cursor.close()
 
         # Redirect user to home page
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
+        cursor.close()
         return render_template("login.html")
 
 
@@ -147,7 +166,10 @@ def register():
     """Register user"""
 
     # defining connection instance
-    db = get_db_connection()
+    # to get the sqlite db connection
+    conn = sqlite3.connect(current_directory + '/icontent.db')
+    cursor = conn.cursor() 
+    cursor.row_factory = lambda cursor, row: row[0]
 
     #user = session["user_name"]
     # if user needs page displayed only
@@ -158,8 +180,14 @@ def register():
     if request.method == "POST":
 
         # for validating against existing data in users table
-        username_data = db.execute("SELECT username FROM users")
-        usernames = [user["username"] for user in username_data]
+        usernames = cursor.execute("SELECT username FROM users").fetchall()
+        
+        
+        print()
+        print()
+        print(usernames)
+        print()
+        print()
 
         # if user doesn't fill every required form field,
         # return error function
@@ -168,18 +196,26 @@ def register():
         confirmation = request.form.get("confirmation")
 
         if (username in usernames):
-            return error("Username already exists.")
+            return render_template("error.html")
         elif not username or not password or not confirmation:
-            return error("Please fill out all required fields.")
+            return render_template("error.html")
         elif (password != confirmation):
-            return error("passwords do not match.")
+            return render_template("error.html")
         else:
             # if all checks out, register the new user using a hashed password :)
             # generate hash for password to encrypt
             hashed_password = generate_password_hash(password)
-            new_id = db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", (username, hashed_password))
-    
+            new_id = cursor.execute("INSERT INTO users (username, hash) VALUES (?, ?)", (username, hashed_password))
+            
+            # commit change to db
+            conn.commit()
+
             # Log new user in
             session["user_id"] = new_id.fetchall()
+            print(session["user_id"])
+
+            # close cursor
+            cursor.close()
             
+            # return login tmeplate
             return render_template("login.html")
