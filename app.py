@@ -136,29 +136,32 @@ def logout():
 @login_required
 def content():
     """Get video from YouTube API"""
+    if request.method == "POST":
+        # call the api and use query to return results
+        video = request.form.get("search")
+        
+        request = youtube.channels().list( 
+            part="snippet",
+            q=video,
+            type="video"
+        )
 
-    # call the api and use query to return results
-    video = request.form.get("search")
+        response = request.execute()
+        print()
+        print()
+        print(response)
+        print()
+        print()
+        result = response[0]
+
+        # TODO - use api to send a video on html page
+        # based off of word searched for
+
+        entry = request.form.get("entry")
+        return render_template("content.html", result=result, entry=entry)
     
-    request = youtube.channels().list( 
-        part="snippet",
-        q=video,
-        type="video"
-    )
-
-    response = request.execute()
-    print()
-    print()
-    print(response)
-    print()
-    print()
-    result = response[0]
-
-    # TODO - use api to send a video on html page
-    # based off of word searched for
-
-    entry = request.form.get("entry")
-    return render_template("content.html", result=result, entry=entry)
+    else:
+        return redirect("index.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -181,13 +184,6 @@ def register():
 
         # for validating against existing data in users table
         usernames = cursor.execute("SELECT username FROM users").fetchall()
-        
-        
-        print()
-        print()
-        print(usernames)
-        print()
-        print()
 
         # if user doesn't fill every required form field,
         # return error function
@@ -206,16 +202,15 @@ def register():
             # generate hash for password to encrypt
             hashed_password = generate_password_hash(password)
             new_id = cursor.execute("INSERT INTO users (username, hash) VALUES (?, ?)", (username, hashed_password))
+
             
             # commit change to db
             conn.commit()
-
-            # Log new user in
-            session["user_id"] = new_id.fetchall()
-            print(session["user_id"])
-
             # close cursor
             cursor.close()
             
             # return login tmeplate
             return render_template("login.html")
+
+if __name__ == "__main__":
+    app.run()
