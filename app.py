@@ -1,12 +1,13 @@
 import sqlite3 
-from flask import Flask, flash, redirect, render_template, request, session, abort
+from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
+from IPython.display import JSON
 
 import os
 
-from helpers.helper import error, login_required, read_config
+from helpers.helper import login_required, read_config
 from googleapiclient.discovery import build
 
 # directory for application - 
@@ -21,7 +22,7 @@ API_KEY = config["FTPSettings"]["api_key"]
 # for youtube api calls
 api_service_name = "youtube"
 api_version = "v3"
-youtube = build(api_service_name, api_version, developerKey=API_KEY)   
+youtube = build(api_service_name, api_version, developerKey=API_KEY)  
 
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -97,14 +98,15 @@ def login():
             return render_template("error.html")
 
         # Query database for username
-        rows = cursor.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
-
+        rows = cursor.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),)).fetchall()
+        
+        print(check_password_hash(request.form.get("username"), request.form.get("password")))
         # Ensure username exists and password is correct
-        if not check_password_hash(rows.fetchall(), request.form.get("password")):
+        if not check_password_hash(rows[0]["hash"], request.form.get("password")):
             return render_template("error.html")
 
         # Remember which user has logged in
-        session["user_id"] = rows.fetchall()[0] 
+        session["user_id"] = rows[0]["username"]
 
         # commit the change in db
         conn.commit()
@@ -136,38 +138,48 @@ def logout():
 @login_required
 def content():
     """Get video from YouTube API"""
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
     if request.method == "POST":
+        
+        # for youtube api calls
+        api_service_name = "youtube"
+        api_version = "v3"
+        youtube = build(
+            api_service_name, api_version, developerKey=API_KEY)  
+        
         # call the api and use query to return results
         video = request.form.get("search")
-        
-        request = youtube.channels().list( 
+
+        request_api = youtube.search().list( 
             part="snippet",
             q=video,
             type="video"
         )
 
-        response = request.execute()
-        print()
-        print()
+        response = request_api.execute()
         print(response)
         print()
+        print(JSON(response))
         print()
-        result = response[0]
+        print()
 
         # TODO - use api to send a video on html page
         # based off of word searched for
 
         entry = request.form.get("entry")
-        return render_template("content.html", result=result, entry=entry)
+        return render_template("content.html", entry=entry)
     
     else:
-        return redirect("index.html")
+        return render_template("content.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
 
+    print(current_directory + "/icontent.db")
+    print()
     # defining connection instance
     # to get the sqlite db connection
     conn = sqlite3.connect(current_directory + '/icontent.db')
@@ -184,7 +196,8 @@ def register():
 
         # for validating against existing data in users table
         usernames = cursor.execute("SELECT username FROM users").fetchall()
-
+        print(usernames)
+        print()
         # if user doesn't fill every required form field,
         # return error function
         username = request.form.get("username")
@@ -201,16 +214,16 @@ def register():
             # if all checks out, register the new user using a hashed password :)
             # generate hash for password to encrypt
             hashed_password = generate_password_hash(password)
-            new_id = cursor.execute("INSERT INTO users (username, hash) VALUES (?, ?)", (username, hashed_password))
-
-            
+            new_id_db = cursor.execute("INSERT INTO users (username, hash) VALUES (?, ?)", (username, hashed_password))
+            session["user_id"] = new_id_db.fetchone()
+                 
             # commit change to db
             conn.commit()
             # close cursor
             cursor.close()
             
             # return login tmeplate
-            return render_template("login.html")
+            return render_template("content.html")
 
 if __name__ == "__main__":
     app.run()
