@@ -138,6 +138,17 @@ def logout():
 @login_required
 def content():
     """Get video from YouTube API"""
+    
+    # user in session
+    user = session["user_id"]
+
+    # defining connection instance
+    # to get the sqlite db connection
+    conn = sqlite3.connect(current_directory + '/icontent.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # to disable OAuth authentication (???)
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     if request.method == "POST":
@@ -148,7 +159,7 @@ def content():
         youtube = build(
             api_service_name, api_version, developerKey=API_KEY)  
         
-        # call the api and use query to return results
+        # store query in variable to use for parsed JSON results from API
         video = request.form.get("search")
 
         request_api = youtube.search().list( 
@@ -158,19 +169,39 @@ def content():
         )
 
         response = request_api.execute()
+        print()
+        print()
+        print()
         print(response)
         print()
-        print(JSON(response))
+        print()
         print()
         print()
 
-        # TODO - use api to send a video on html page
-        # based off of word searched for
+        # TODO will parse JSON to determine what to access
+        video_name = response[0]
 
+        # will use this variable for text to display on index page
+        # as well as content page
         entry = request.form.get("entry")
-        return render_template("content.html", entry=entry)
+
+        # Insert data into history table
+        data_db = cursor.execute("INSERT INTO history (video_name, text_content) VALUES (?, ?, ?) WHERE user_id = ?", (video_name, entry, user))
+        data = data_db.fetchall()
+        print(data)
+        print()
+        print()
+        
+        # committing change and closing cursor
+        conn.commit()
+        cursor.close()
+        
+        # post will redirect user to index page
+        # to see the content they generated thus far
+        return render_template("index.html", data=data)
     
     else:
+        cursor.close()
         return render_template("content.html")
 
 

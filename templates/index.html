@@ -5,8 +5,22 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/index" method="post">
-        <input autocomplete="off" autofocus name="query" placeholder="search a word" type="text" required>
-        <button class="btn btn-primary" type="submit">search</button>
-    </form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+        <th scope="col">Video</th>
+        <th scope="col">Your Thoughts</th>
+        <th scope="col">Time Logged</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in history %}
+        <tr>
+        <td>{{ row["video"] }}</td>
+        <td>{{ row["entry"] }}</td>
+        <td>{{ row["time_logged"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
 {% endblock %}
