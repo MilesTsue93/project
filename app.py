@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from IPython.display import JSON
 
 import os
+import datetime
 
 from helpers.helper import login_required, read_config
 from googleapiclient.discovery import build
@@ -44,24 +45,20 @@ def after_request(response):
 @login_required
 def index():
     
+    # variable to use for current logged-in user
+    user = session["user_id"]
+
     # defining connection instance
     # to get the sqlite db connection
     conn = sqlite3.connect(current_directory + '/icontent.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor() 
+    
+    history_db = cursor.execute("SELECT video_name, text_content, time_logged FROM history WHERE user_id = ?", (user,))
+    history = history_db.fetchall()
 
-    user = session["user_id"]
-    print(user)
-    print()
-    print()
-    
-    history = cursor.execute("SELECT video_name, text_content, time_logged FROM history")
-    
     # commit the change in db
     conn.commit()
-    
-    # close the cursor
-    cursor.close()
 
     # return the html page to show user content history
     return render_template('index.html', history=history)
@@ -139,7 +136,7 @@ def logout():
 def content():
     """Get video from YouTube API"""
     
-    # user in session
+    # variable to use for current logged-in user
     user = session["user_id"]
 
     # defining connection instance
@@ -179,22 +176,25 @@ def content():
         print()
 
         # TODO will parse JSON to determine what to access
-        video_name = response[0]
+        video_name = response["items"][0]["kind"]
 
         # will use this variable for text to display on index page
         # as well as content page
         entry = request.form.get("entry")
 
+        # for time_logged
+        time_logged = datetime.datetime.now()
+
         # Insert data into history table
-        data_db = cursor.execute("INSERT INTO history (video_name, text_content) VALUES (?, ?, ?) WHERE user_id = ?", (video_name, entry, user))
-        data = data_db.fetchall()
+        data_db = cursor.execute("INSERT INTO history (video_name, text_content, time_logged) VALUES (?, ?, ?)", (video_name, entry, time_logged))
+        data = data_db.fetchone()
         print(data)
         print()
         print()
         
         # committing change and closing cursor
         conn.commit()
-        cursor.close()
+       
         
         # post will redirect user to index page
         # to see the content they generated thus far
@@ -257,4 +257,4 @@ def register():
             return render_template("content.html")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
