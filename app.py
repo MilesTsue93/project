@@ -3,7 +3,8 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
-from IPython.display import JSON
+from string import Template
+#import requests
 
 import os
 import datetime
@@ -14,6 +15,19 @@ from googleapiclient.discovery import build
 # directory for application - 
 # to be concatenated with database relative path
 current_directory = os.path.dirname(os.path.abspath(__file__))
+
+# HTML template to dynamically embed youtube videos on content page
+# code borrowed from this tutorial: 
+# http://www.compjour.org/lessons/flask-single-page/simple-youtube-viewing-flask-app/
+HTML_TEMPLATE = Template("""
+      <h2>
+        YouTube video link: 
+        <a href="https://www.youtube.com/watch?v=${youtube_id}?autoplay=1">
+          ${youtube_id}
+        </a>
+      </h2>
+    
+      <iframe src="https://www.youtube.com/embed/${youtube_id}" width="853" height="480" frameborder="0" allowfullscreen></iframe>""")
 
 # Configure application
 app = Flask(__name__)
@@ -166,14 +180,6 @@ def content():
         )
 
         response = request_api.execute()
-        print()
-        print()
-        print()
-        print(response)
-        print()
-        print()
-        print()
-        print()
 
         # TODO will parse JSON to determine what to access
         video_name = response["items"][0]["kind"]
@@ -187,7 +193,7 @@ def content():
 
         # Insert data into history table
         data_db = cursor.execute("INSERT INTO history (video_name, text_content, time_logged) VALUES (?, ?, ?)", (video_name, entry, time_logged))
-        data = data_db.fetchone()
+        data = data_db.fetchall()
         print(data)
         print()
         print()
