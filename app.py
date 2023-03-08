@@ -68,11 +68,15 @@ def index():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor() 
     
-    history_db = cursor.execute("SELECT video_name, text_content, time_logged FROM history WHERE user_id = ?", (user,))
-    history = history_db.fetchall()
+    history = cursor.execute("SELECT video_name, text_content, time_logged FROM history WHERE user_id = ?", (user,)).fetchall()
+    print(history)
+    print()
 
     # commit the change in db
     conn.commit()
+
+    # close cursor
+    cursor.close()
 
     # return the html page to show user content history
     return render_template('index.html', history=history)
@@ -192,15 +196,16 @@ def content():
         time_logged = datetime.datetime.now()
 
         # Insert data into history table
-        data_db = cursor.execute("INSERT INTO history (video_name, text_content, time_logged) VALUES (?, ?, ?)", (video_name, entry, time_logged))
-        data = data_db.fetchall()
+        data = cursor.execute("INSERT INTO history (video_name, text_content, time_logged) VALUES (?, ?, ?)", (video_name, entry, time_logged)).fetchall()
+        
         print(data)
         print()
         print()
         
         # committing change and closing cursor
         conn.commit()
-       
+
+        cursor.close()
         
         # post will redirect user to index page
         # to see the content they generated thus far
@@ -233,8 +238,7 @@ def register():
 
         # for validating against existing data in users table
         usernames = cursor.execute("SELECT username FROM users").fetchall()
-        print(usernames)
-        print()
+
         # if user doesn't fill every required form field,
         # return error function
         username = request.form.get("username")
