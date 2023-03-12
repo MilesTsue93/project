@@ -4,7 +4,6 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 from string import Template
-#import requests
 
 import os
 import datetime
@@ -15,19 +14,6 @@ from googleapiclient.discovery import build
 # directory for application - 
 # to be concatenated with database relative path
 current_directory = os.path.dirname(os.path.abspath(__file__))
-
-# HTML template to dynamically embed youtube videos on content page
-# code borrowed from this tutorial: 
-# http://www.compjour.org/lessons/flask-single-page/simple-youtube-viewing-flask-app/
-HTML_TEMPLATE = Template("""
-      <h2>
-        YouTube video link: 
-        <a href="https://www.youtube.com/watch?v=${youtube_id}?autoplay=1">
-          ${youtube_id}
-        </a>
-      </h2>
-    
-      <iframe src="https://www.youtube.com/embed/${youtube_id}" width="853" height="480" frameborder="0" allowfullscreen></iframe>""")
 
 # Configure application
 app = Flask(__name__)
@@ -69,8 +55,6 @@ def index():
     cursor = conn.cursor() 
     
     history = cursor.execute("SELECT video_name, text_content, time_logged FROM history WHERE user_id = '" + user + "'").fetchall()
-    print(history)
-    print()
 
     # commit the change in db
     conn.commit()
@@ -184,9 +168,6 @@ def content():
         )
 
         response = request_api.execute()
-        print(response)
-
-        # TODO will parse JSON to determine what to access
         
         video_name = response["items"][0]["id"]["videoId"]
         video_title = response["items"][0]["snippet"]["title"]
@@ -206,8 +187,8 @@ def content():
 
         cursor.close()
         
-        # post will redirect user to index page
-        # to see the content they generated thus far
+        
+        # to see the video they generated
         return render_template("content.html", video_name=video_name)
     
     else:
@@ -219,15 +200,12 @@ def content():
 def register():
     """Register user"""
 
-    print(current_directory + "/icontent.db")
-    print()
     # defining connection instance
     # to get the sqlite db connection
     conn = sqlite3.connect(current_directory + '/icontent.db')
     cursor = conn.cursor() 
     cursor.row_factory = lambda cursor, row: row[0]
 
-    #user = session["user_name"]
     # if user needs page displayed only
     if request.method == "GET":
         return render_template("register.html")
@@ -262,8 +240,8 @@ def register():
             # close cursor
             cursor.close()
             
-            # return login tmeplate
-            return render_template("content.html")
+            # return login template
+            return render_template("login.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
