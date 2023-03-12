@@ -68,7 +68,7 @@ def index():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor() 
     
-    history = cursor.execute("SELECT video_name, text_content, time_logged FROM history WHERE user_id = ?", (user,)).fetchall()
+    history = cursor.execute("SELECT video_name, text_content, time_logged FROM history WHERE user_id = '" + user + "'").fetchall()
     print(history)
     print()
 
@@ -184,9 +184,12 @@ def content():
         )
 
         response = request_api.execute()
+        print(response)
 
         # TODO will parse JSON to determine what to access
-        video_name = response["items"][0]["kind"]
+        
+        video_name = response["items"][0]["id"]["videoId"]
+        video_title = response["items"][0]["snippet"]["title"]
 
         # will use this variable for text to display on index page
         # as well as content page
@@ -196,11 +199,7 @@ def content():
         time_logged = datetime.datetime.now()
 
         # Insert data into history table
-        data = cursor.execute("INSERT INTO history (video_name, text_content, time_logged) VALUES (?, ?, ?)", (video_name, entry, time_logged)).fetchall()
-        
-        print(data)
-        print()
-        print()
+        cursor.execute("INSERT INTO history (video_name, text_content, time_logged, user_id) VALUES (?, ?, ?, ?)", (video_title, entry, time_logged, user)).fetchall()
         
         # committing change and closing cursor
         conn.commit()
@@ -209,7 +208,7 @@ def content():
         
         # post will redirect user to index page
         # to see the content they generated thus far
-        return render_template("index.html", data=data)
+        return render_template("content.html", video_name=video_name)
     
     else:
         cursor.close()
